@@ -1,0 +1,100 @@
+-- $Id: $
+-- File name:   tb_Raster.vhd
+-- Created:     12/2/2011
+-- Author:      Aashish Raj Simha
+-- Lab Section: 337-04
+-- Version:     1.0  Initial Test Bench
+
+library ieee;
+--library gold_lib;   --UNCOMMENT if you're using a GOLD model
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+--use gold_lib.all;   --UNCOMMENT if you're using a GOLD model
+
+entity tb_Raster is
+end tb_Raster;
+
+architecture TEST of tb_Raster is
+
+  function UINT_TO_STD_LOGIC( X: INTEGER; NumBits: INTEGER )
+     return STD_LOGIC_VECTOR is
+  begin
+    return std_logic_vector(to_unsigned(X, NumBits));
+  end;
+
+  function STD_LOGIC_TO_UINT( X: std_logic_vector)
+     return integer is
+  begin
+    return to_integer(unsigned(x));
+  end;
+
+  component Raster
+    PORT(
+         boundry_object_shadow : IN std_logic;
+         clk : IN std_logic;
+         data_in : IN std_logic_vector (15 DOWNTO 0);
+         data_in1 : IN std_logic_vector (15 DOWNTO 0 );
+         output_buffer_math_empty : IN std_logic;
+         output_buffer_math_full : IN std_logic;
+         reset : IN std_logic;
+         address : OUT std_logic_vector (15 DOWNTO 0);
+         data_out : OUT std_logic_vector (15 DOWNTO 0);
+         read_enable_sram : OUT std_logic;
+         write_enable_sram : OUT std_logic
+    );
+  end component;
+
+-- Insert signals Declarations here
+  signal boundry_object_shadow : std_logic;
+  signal clk : std_logic;
+  signal data_in : std_logic_vector (15 DOWNTO 0);
+  signal data_in1 : std_logic_vector (15 DOWNTO 0 );
+  signal output_buffer_math_empty : std_logic;
+  signal output_buffer_math_full : std_logic;
+  signal reset : std_logic;
+  signal address : std_logic_vector (15 DOWNTO 0);
+  signal data_out : std_logic_vector (15 DOWNTO 0);
+  signal read_enable_sram : std_logic;
+  signal write_enable_sram : std_logic;
+
+-- signal <name> : <type>;
+
+begin
+  DUT: Raster port map(
+                boundry_object_shadow => boundry_object_shadow,
+                clk => clk,
+                data_in => data_in,
+                data_in1 => data_in1,
+                output_buffer_math_empty => output_buffer_math_empty,
+                output_buffer_math_full => output_buffer_math_full,
+                reset => reset,
+                address => address,
+                data_out => data_out,
+                read_enable_sram => read_enable_sram,
+                write_enable_sram => write_enable_sram
+                );
+
+--   GOLD: <GOLD_NAME> port map(<put mappings here>);
+
+process
+
+  begin
+
+-- Insert TEST BENCH Code Here
+
+    boundry_object_shadow <= 
+
+    clk <= 
+
+    data_in <= 
+
+    data_in1 <= 
+
+    output_buffer_math_empty <= 
+
+    output_buffer_math_full <= 
+
+    reset <= 
+
+  end process;
+end TEST;

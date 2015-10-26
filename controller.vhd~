@@ -1,0 +1,111 @@
+
+Library IEEE;
+use IEEE.std_logic_1164.all;
+
+entity controller is
+  port(
+    CLK          : in std_logic;
+    RST          : in std_logic;
+    --raster_enable : in std_logic;
+    --X_Vertex     : in std_logic;
+    --Y_vertex     : in std_logic;
+    busy         : in std_logic;
+    enable       : out std_logic;
+    Vertex1_X    : out std_logic_vector(7 downto 0);
+    Vertex1_Y    : out std_logic_vector(7 downto 0);
+    Vertex2_X    : out std_logic_vector(7 downto 0);
+    Vertex2_Y    : out std_logic_vector(7 downto 0)
+  );
+
+architecture behavior of controller is
+  type state_type is(IDLE, OUTPUT1, CHECK1, OUTPUT2, CHECK2, OUTPUT3, CHECK3, OUTPUT4, CHECK4); 
+  signal state, nextstate: state_type;
+  Begin
+
+  process(CLK, RST)
+    begin 
+      if(RST = '1') then
+      state <= IDLE; 
+    elsif(rising_edge(CLK)) then
+      state <= nextstate;
+    end if;
+  end process;
+
+
+
+  process(state, busy)
+    begin
+      case state is
+
+      when IDLE => 
+        nextstate <= OUTPUT1;
+    
+      when OUTPUT1 => 
+        nextstate <= CHECK1
+
+      when CHECK1 =>
+        if(busy = '0') then
+          nextstate <= OUTPUT2;
+        else
+          nextstate <= CHECK1;
+        end if;
+
+      when OUTPUT2 =>
+        nextstate <= CHECK2;
+      
+      when CHECK2 =>
+        if(busy = '0') 
+          nextstate <= OUTPUT3;
+        else
+          nextstate <= CHECK2;
+        end if; 
+
+      when OUTPUT3 =>
+        nextstate <= CHECK3;
+      
+      when CHECK3 =>
+        if(busy = '0') 
+          nextstate <= OUTPUT4;
+        else
+          nextstate <= CHECK3;
+        end if;  
+
+      when OUTPUT4 =>
+        nextstate <= CHECK4;
+      
+      when CHECK4 =>
+        if(busy = '0') 
+          nextstate <= IDLE;
+        else
+          nextstate <= CHECK4;
+        end if;         
+        
+        
+  --Output logic
+  
+  enable <= '1';
+
+  Vertex1_X <= "00001000" when state = OUTPUT1 | state = CHECK1,
+               "00010000" when state = OUTPUT2 | state = CHECK2,
+               "00010000" when state = OUTPUT3 | state = CHECK3,
+               "00001000" when state = OUTPUT4 | state = CHECK4,
+               "00000000" when others;
+
+  Vertex1_Y <= "00001000" when state = OUTPUT1 | state = CHECK1,
+               "00001000" when state = OUTPUT2 | state = CHECK2,
+               "00010000" when state = OUTPUT3 | state = CHECK3,
+               "00010000" when state = OUTPUT4 | state = CHECK4,
+               "00000000" when others;
+
+  Vertex2_X <= "00010000" when state = OUTPUT1 | state = CHECK1,
+               "00010000" when state = OUTPUT2 | state = CHECK2,
+               "00001000" when state = OUTPUT3 | state = CHECK3,
+               "00001000" when state = OUTPUT4 | state = CHECK4,
+               "00000000" when others;
+
+  Vertex2_Y <= "00001000" when state = OUTPUT1 | state = CHECK1,
+               "00010000" when state = OUTPUT2 | state = CHECK2,
+               "00010000" when state = OUTPUT3 | state = CHECK3,
+               "00001000" when state = OUTPUT4 | state = CHECK4,
+               "00000000" when others;
+

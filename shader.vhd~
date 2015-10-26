@@ -1,0 +1,152 @@
+Library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+entity shader is
+  port(
+    CLK            : in std_logic;
+    RST            : in std_logic;
+    ENABLE         : in std_logic;
+    PIXEL_X1       : in std_logic_vector (7 downto 0);
+    PIXEL_X2       : in std_logic_vector (7 downto 0);
+    PIXEL_Y1       : in std_logic_vector (7 downto 0);
+    PIXEL_Y2       : in std_logic_vector (7 downto 0);
+   -- PIXELADDRESS_Y : out std_logic_vector(7 downto 0);
+    SHADEPIXEL_X   : out std_logic_vector(7 downto 0);
+    SHADEPIXEL_Y   : out std_logic_vector(7 downto 0);
+    LINE_DONE      : out std_logic;
+    DONE           : out std_logic
+
+  );
+end shader;
+
+architecture behavioral of shader is
+  type state_type is(IDLE, CHECK1, CHECK2, UPDATEX, UPDATEY, STOP, SHADE); 
+  signal state, nextstate: state_type;
+  signal count_y, nextcount_y : std_logic_vector(7 downto 0); 
+  signal count_x, nextcount_x : std_logic_vector(7 downto 0);
+ -- signal q1 , q2, q3 : std_logic ; 
+  Begin
+
+  process(CLK, RST , q1 , q2 , q3)
+    begin 
+      if(RST = '1') then
+      state <= IDLE;
+      count_y <= "00000000" ;  
+      count_x <= "00000000" ;
+     -- q2 <= q1 ; 
+    --  q3 <= q2 ; 
+     -- DONE <= q3 ;   
+    elsif(rising_edge(CLK)) then
+      state <= nextstate;
+      count_y <= nextcount_y;
+      count_x <= nextcount_x;
+   --   q2 <= q1 ; 
+   --   q3 <= q2 ; 
+   --   DONE <= q3 ; 
+    end if;
+  end process;
+  
+  process(state, PIXEL_X1, PIXEL_X2, ENABLE, count_x, count_y, PIXEL_Y2,PIXEL_Y1)
+    begin
+      case state is 
+      
+      when IDLE =>
+        nextcount_x <= PIXEL_X1;
+        nextcount_y <= PIXEL_Y1;
+        if(ENABLE = '1') then
+          nextstate <= CHECK1;
+        else
+          nextstate <= IDLE;
+        end if;
+        
+      --when CHECK =>
+        --nextcount_x <= count_x;
+        --nextcount_y <= count_y;
+        --nextstate <= CHECK1;
+        
+      when CHECK1 =>
+        nextcount_x <= count_x;
+        nextcount_y <= count_y;
+        if(PIXEL_X1 = "00000000" and PIXEL_X2="00000000") then
+          nextstate <= UPDATEY;
+        else
+          nextstate <= SHADE;
+        end if;
+        
+      when CHECK2 =>
+        nextcount_x <= count_x;
+        nextcount_y <= count_y;
+        if(count_x = PIXEL_X2) then
+          nextstate <= UPDATEY;
+        else 
+          nextstate <= SHADE; 
+        end if;
+        
+      --when INITIALIZE =>
+      --  nextcount_y <= count_y;  --count_y;
+       -- nextcount_x <= PIXEL_X1;
+        --nextstate <= SHADE;
+       
+      when SHADE =>
+        nextcount_x <= count_x;
+        nextcount_y <= count_y;
+        nextstate <=  UPDATEX; 
+      
+ --when SHADE1 =>
+ --      nextcount_x <= count_x;
+  --      nextcount_y <= count_y;
+  --      nextstate <= UPDATEX; 
+				  
+      when UPDATEY =>  
+        if(count_y = PIXEL_Y2) then
+           nextstate <= STOP;
+           nextcount_y <= count_y ; 
+           nextcount_x <= count_x ; 
+        else
+        nextcount_y <= count_y + '1';
+        nextcount_x <=PIXEL_X1;
+        nextstate <= CHECK1;
+        end if ; 
+        
+      when UPDATEX =>  
+        nextcount_x <= count_x + '1';
+        nextcount_y <= count_y;
+        nextstate <= CHECK2;
+        
+      when STOP =>
+        nextcount_y <= "00000000";
+        nextcount_x <= "00000000";
+        nextstate <= IDLE;
+
+    when others => 
+        nextcount_x <= count_x ;
+        nextcount_y <= count_y ;
+         nextstate <= IDLE;
+           
+      end case;
+      
+    end process;
+    
+  --PIXELADDRESS_Y  <= count_y;
+  
+ --with state select 
+    SHADEPIXEL_X <= count_x; --when SHADE | SHADE1,
+                    --"00000000" when others;
+                    
+  --with state select
+    SHADEPIXEL_Y <= count_y; --when SHADE | SHADE1,
+                    --"00000000" when others;
+  
+  with state select
+    DONE <= '1' when STOP,
+            '0' when others;
+            
+  with state select
+    LINE_DONE <= '1' when UPDATEY,
+                 '0' when others;
+
+                    
+end behavioral;
+ 
